@@ -1,0 +1,31 @@
+{
+  "name": "mybb-sync",
+  "version": "0.1.0",
+  "license": "GNU General Public License v3",
+  "repository": "https://github.com/stubbo-me/mybb-sync",
+  "main": "src/main.js",
+  "author": {
+    "name": "Stubbo",
+    "email": "george@stubbo.me"
+  },
+  "dependencies": {
+    "discord.js": "^11.4.2",
+    "discord.js-commando": "^0.10.0",
+    "discord.js-commando-mysqlprovider": "^0.1.0",
+    "dotenv": "^6.2.0",
+    "log4js": "^4.0.2",
+    "mysql2": "^1.6.5",
+    "sourcequery": "0.0.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.3.3",
+    "@babel/preset-env": "^7.3.1",
+    "babel-cli": "^6.26.0"
+  },
+  "scripts": {
+    "build": "node_modules\\.bin\\babel src --out-dir out",
+    "start": "node ./out/main.js",
+    "dev": "npm run build && npm run start"
+  }
+}
