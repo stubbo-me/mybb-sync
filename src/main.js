@@ -35,6 +35,8 @@ client.on('ready', () => {
 
     Logger.info('Starting WebHook service.');
     WebHooks(client);
+
+    //todo get sync requests from a database which was missed when/if the bot was offline.
 });
 
 MySQL.createConnection({
