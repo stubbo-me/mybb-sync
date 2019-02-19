@@ -34,7 +34,7 @@ client.on('ready', () => {
     client.user.setActivity(process.env.BOT_ACTIVITY);
 
     Logger.info('Starting WebHook service.');
-    WebHooks();
+    WebHooks(client);
 });
 
 MySQL.createConnection({

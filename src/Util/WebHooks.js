@@ -12,10 +12,11 @@ import bodyParser from 'body-parser';
 
 import Logging from './Logging';
 
-export default function WebHooks() {
+export default function WebHooks(client) {
     DotEnv.config();
 
     const Logger = Logging.getLogger('WebHook');
+    const syncLogger = Logging.getLogger('Rank Sync');
 
     const options = {
         key: fs.readFileSync(process.env.WEBHOOK_KEY),
@@ -41,8 +42,47 @@ export default function WebHooks() {
     });
 
     app.post('/user/:userId/roles/update', (request, response) => {
-        response.json([request.params, request.body]);
-        //todo use data to update roles
+        const user = request.params['userId'],
+            roles = request.body['roles'],
+            guildId = request.body['guild'];
+
+        const guild = client.guilds.find(g => g.id === guildId);
+        if (!guild)
+            return response.status(400).json({'error': 'invalid guild'});
+
+        guild.fetchMember(user).then(member => {
+            roles.forEach(role => {
+                const hasRole = member.roles.find(r => r.name === role);
+                const roleExists = guild.roles.find(r => r.name === role);
+                if (hasRole)
+                    return;
+                if (roleExists) {
+                    member.addRole(roleExists, 'Rank Sync').then(() => {
+                        syncLogger.info(`Added the role ${roleExists.name} to ${member.user.tag}`);
+                    }).catch(err => {
+                        syncLogger.error('Role Sync error, see error log for more information');
+                        Logging.getLogger('error').error('Role Sync error', err);
+                    });
+                } else {
+                    guild.createRole({
+                        name: role,
+                        color: 'RANDOM'
+                    }, 'Rank Sync').then(r => {
+                        syncLogger.info(`Created the role ${role}`);
+                        member.addRole(r, 'Rank Sync').then(() => {
+                            syncLogger.info(`Added the role ${r.name} to ${member.user.tag}`);
+                        }).catch(err => {
+                            syncLogger.error('Role Sync error, see error log for more information');
+                            Logging.getLogger('error').error('Role Sync error', err);
+                        });
+                    }).catch(err => {
+                        syncLogger.error('Role Sync error, see error log for more information');
+                        Logging.getLogger('error').error('Role Sync error', err);
+                    });
+                }
+            });
+        });
+        response.status(200).end();
     });
 
     if (process.env.WEBHOOK_SECURE) {
