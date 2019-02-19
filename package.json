@@ -9,10 +9,12 @@
     "email": "george@stubbo.me"
   },
   "dependencies": {
+    "body-parser": "^1.18.3",
     "discord.js": "^11.4.2",
     "discord.js-commando": "^0.10.0",
     "discord.js-commando-mysqlprovider": "^0.1.0",
     "dotenv": "^6.2.0",
+    "express": "^4.16.4",
     "log4js": "^4.0.2",
     "mysql2": "^1.6.5",
     "sourcequery": "0.0.2"

@@ -10,10 +10,11 @@ import MySQL from 'mysql2/promise';
 import CommandoProvider from 'discord.js-commando-mysqlprovider';
 
 import Logging from './Util/Logging';
+import WebHooks from './Util/WebHooks';
 
 let Logger = Logging.getLogger('Initialise');
 
-Logger.info('Loading Config');
+Logger.info('Loading Config.');
 let env = DotEnv.config();
 if (env.error) {
     Logger.error('Failed to load config, see error log for more information.');
@@ -31,6 +32,9 @@ client.on('ready', () => {
     Logger.info(`Discord ~ Logged in as ${client.user.tag}`);
 
     client.user.setActivity(process.env.BOT_ACTIVITY);
+
+    Logger.info('Starting WebHook service.');
+    WebHooks();
 });
 
 MySQL.createConnection({
