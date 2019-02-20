@@ -11,6 +11,7 @@ import CommandoProvider from 'discord.js-commando-mysqlprovider';
 
 import Logging from './Util/Logging';
 import WebHooks from './Util/WebHooks';
+import DownTimeCtl from './Util/DownTimeManagement';
 
 let Logger = Logging.getLogger('Initialise');
 
@@ -19,6 +20,8 @@ let env = DotEnv.config();
 if (env.error) {
     Logger.error('Failed to load config, see error log for more information.');
     Logging.getLogger('error').error('Config failed to load.', env.error);
+
+    process.exit(1);
 }
 
 const client = new Commando.CommandoClient({
@@ -33,10 +36,13 @@ client.on('ready', () => {
 
     client.user.setActivity(process.env.BOT_ACTIVITY);
 
+    //todo create a generic function for the WebHook and downtime to sync with (clean up a little)
+
     Logger.info('Starting WebHook service.');
     WebHooks(client);
 
-    //todo get sync requests from a database which was missed when/if the bot was offline.
+    Logger.info('Starting DownTime catch up');
+    DownTimeCtl(client);
 });
 
 MySQL.createConnection({
@@ -47,8 +53,15 @@ MySQL.createConnection({
     port: process.env.DB_PORT
 }).then(db => {
     client.setProvider(new CommandoProvider(db));
-    client.login(process.env.BOT_TOKEN);
+    client.login(process.env.BOT_TOKEN).catch(err => {
+        Logger.error('Issue occurred when starting bot instance, see error log for more information.');
+        Logging.getLogger('error').error('Bot Login error', err);
+
+        process.exit(1);
+    });
 }).catch(err => {
     Logger.error('Issue connecting to database, see error log for more information.');
     Logging.getLogger('error').error('Database error', err);
+
+    process.exit(1);
 });
